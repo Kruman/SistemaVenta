@@ -3,8 +3,11 @@ package Vista;
 
 import Modelo.Cliente;
 import Modelo.ClienteDao;
+import Modelo.Proveedor;
+import Modelo.ProveedorDao;
 import java.util.List;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -15,12 +18,15 @@ public class Sistema extends javax.swing.JFrame {
     
     Cliente cl = new Cliente();
     ClienteDao cliente = new ClienteDao();
+    Proveedor pr = new Proveedor();
+    ProveedorDao prDao = new ProveedorDao();
     DefaultTableModel modelo = new DefaultTableModel();
 
     
     public Sistema() {
         initComponents();
         this.setLocationRelativeTo(null);
+        txtIdCliente.setVisible(false);
     }
 
     public void ListarCliente(){
@@ -37,6 +43,22 @@ public class Sistema extends javax.swing.JFrame {
         modelo.addRow(ob);
     }
     TablaCliente.setModel (modelo);
+    }
+    
+    public void ListarProveedor(){
+    List<Proveedor>ListarPr = prDao.ListaProveedor();
+    modelo = (DefaultTableModel) TableProveedor.getModel();
+    Object[] ob = new Object[6];
+    for (int i=0;i<ListarPr.size(); i++){
+        ob[0]=ListarPr.get(i).getId();
+        ob[1]=ListarPr.get(i).getRuc();
+        ob[2]=ListarPr.get(i).getNombre();
+        ob[3]=ListarPr.get(i).getTelefono();
+        ob[4]=ListarPr.get(i).getDireccion();
+        ob[5]=ListarPr.get(i).getRazon();
+        modelo.addRow(ob);
+    }
+    TableProveedor.setModel (modelo);
     }
     
     public void LimpiarTabla(){
@@ -495,6 +517,11 @@ public class Sistema extends javax.swing.JFrame {
 
         btnNuevoCliente.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/nuevo.png"))); // NOI18N
         btnNuevoCliente.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnNuevoCliente.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNuevoClienteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -605,16 +632,17 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "RUC", "NOMBRE", "TELEFONO", "DIRECCION", "RAZON SOCIAL"
+                "", "RUC", "NOMBRE", "TELEFONO", "DIRECCION", "RAZON SOCIAL"
             }
         ));
         jScrollPane3.setViewportView(TableProveedor);
         if (TableProveedor.getColumnModel().getColumnCount() > 0) {
-            TableProveedor.getColumnModel().getColumn(0).setPreferredWidth(40);
-            TableProveedor.getColumnModel().getColumn(1).setPreferredWidth(100);
-            TableProveedor.getColumnModel().getColumn(2).setPreferredWidth(50);
-            TableProveedor.getColumnModel().getColumn(3).setPreferredWidth(80);
-            TableProveedor.getColumnModel().getColumn(4).setPreferredWidth(70);
+            TableProveedor.getColumnModel().getColumn(0).setPreferredWidth(20);
+            TableProveedor.getColumnModel().getColumn(1).setPreferredWidth(40);
+            TableProveedor.getColumnModel().getColumn(2).setPreferredWidth(100);
+            TableProveedor.getColumnModel().getColumn(3).setPreferredWidth(50);
+            TableProveedor.getColumnModel().getColumn(4).setPreferredWidth(80);
+            TableProveedor.getColumnModel().getColumn(5).setPreferredWidth(70);
         }
 
         btnGuardarProveedor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/GuardarTodo.png"))); // NOI18N
@@ -1037,7 +1065,9 @@ public class Sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
+        LimpiarTabla();
+        ListarProveedor();
+        jTabbedPane1.setSelectedIndex(2);
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void txtCodigoVentaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCodigoVentaActionPerformed
@@ -1085,7 +1115,29 @@ public class Sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_txtRucProveedorActionPerformed
 
     private void btnGuardarProveedorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarProveedorActionPerformed
-        // TODO add your handling code here:
+        if (!"".equals(txtRucProveedor.getText()) && !"".equals(txtNombreProveedor.getText()) &&
+        !"".equals(txtTelefonoProveedor.getText()) && !"".equals(txtDireccionProveedor.getText())) {
+
+        try {
+            int ruc = Integer.parseInt(txtRucProveedor.getText());
+            int telefono = Integer.parseInt(txtTelefonoProveedor.getText());
+
+            pr.setRuc(ruc);
+            pr.setNombre(txtNombreProveedor.getText());
+            pr.setTelefono(telefono);
+            pr.setDireccion(txtDireccionProveedor.getText());
+            pr.setRazon(txtRazonProveedor.getText());
+
+            prDao.RegistrarProveedor(pr);
+   
+            JOptionPane.showMessageDialog(null, "Proveedor Registrado");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Error: Ruc o Teléfono no es un número válido.");
+        }
+
+    } else {
+        JOptionPane.showMessageDialog(null, "Los campos están vacíos");
+    }
     }//GEN-LAST:event_btnGuardarProveedorActionPerformed
 
     private void txtPrecioProActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPrecioProActionPerformed
@@ -1139,23 +1191,43 @@ public class Sistema extends javax.swing.JFrame {
     }//GEN-LAST:event_btnEliminarClienteActionPerformed
 
     private void btnActualizarClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarClienteActionPerformed
-        if("".equals(txtIdCliente.getText())){
-            JOptionPane.showMessageDialog(null, "seleccione una fila");
-        }else{
+        if ("".equals(txtIdCliente.getText())) {
+        JOptionPane.showMessageDialog(null, "Seleccione una fila");
+    } else {
+        // Validación de campos
+        if (!"".equals(txtDniCliente.getText()) ||
+            !"".equals(txtNombreCliente.getText()) ||
+            !"".equals(txtTelefonoCliente.getText()) ||
+            !"".equals(txtDireccionCliente.getText()) ||
+            !"".equals(txtRazonCliente.getText())) {
+
+            // Establecer valores en el objeto Cliente
             cl.setDni(Integer.parseInt(txtDniCliente.getText()));
             cl.setNombre(txtNombreCliente.getText());
             cl.setTelefono(Integer.parseInt(txtTelefonoCliente.getText()));
             cl.setDireccion(txtDireccionCliente.getText());
             cl.setRazon(txtRazonCliente.getText());
-            cl.setDni(Integer.parseInt(txtDniCliente.getText()));
-            if(!"".equals(txtDniCliente.getText())||!"".equals(txtNombreCliente.getText())||!"".equals(txtTelefonoCliente.getText())||!"".equals(txtDireccionCliente.getText())||!"".equals(txtIdCliente.getText())){
-                cliente.ModificarCliente(cl);
+            cl.setId(Integer.parseInt(txtIdCliente.getText())); // Asegúrate de establecer el ID
+
+            // Actualizar el cliente
+            if (cliente.ModificarCliente(cl)) {
+                // Operación exitosa
                 LimpiarTabla();
                 LimpiarCliente();
-                ListarCliente();   
+                ListarCliente();
+            } else {
+                // Error al actualizar
+                JOptionPane.showMessageDialog(null, "Error al actualizar el cliente");
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Los campos están vacíos");
         }
+    }
     }//GEN-LAST:event_btnActualizarClienteActionPerformed
+
+    private void btnNuevoClienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNuevoClienteActionPerformed
+       LimpiarCliente();
+    }//GEN-LAST:event_btnNuevoClienteActionPerformed
 
     /**
      * @param args the command line arguments
